@@ -1,14 +1,14 @@
 ## Setup Guide
 
-1. **Create a Virtual Environment**
+1 **Create a Virtual Environment**
 
    ```bash
    python -m venv myenv
    
 2 **Install Dependencies**
 
-pip install -r requirements.txt
-
+   ```bash
+   pip install -r requirements.txt
 
 3 **Update Twitter Credentials in .env File**
 
