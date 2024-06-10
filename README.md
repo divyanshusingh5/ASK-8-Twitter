@@ -6,7 +6,7 @@
    
 2 **Install Dependencies**
 
-  ` pip install -r requirements.txt
+    pip install -r requirements.txt
 
 3 **Update Twitter Credentials in .env File**
 
