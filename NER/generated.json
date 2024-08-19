@@ -1,0 +1,4 @@
+<div class="card border border-light rounded shadow-sm p-3 bg-white">
+  <!-- Card content here -->
+</div>
+"bootstrap": "<nav class=\"navbar navbar-dark bg-dark\" style=\"padding: 14px 20px; text-align: center;\"><a class=\"navbar-brand\" href=\"#\">Navbar</a></nav>"
