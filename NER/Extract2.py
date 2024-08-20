@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException, StaleElementReferenceException
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import csv
 
 # Set up Selenium options
 chrome_options = Options()
@@ -32,13 +33,13 @@ def extract_code_from_link(link):
         pre_elements = content_element.find_elements(By.CSS_SELECTOR, "pre.language-html")
         code_elements = content_element.find_elements(By.CSS_SELECTOR, "code.language-html")
         
-        code_snippets = []
+        code_snippets = set()  # Use a set to avoid duplicates
         for pre in pre_elements:
-            code_snippets.append(pre.text)
+            code_snippets.add(pre.text.strip())
         for code in code_elements:
-            code_snippets.append(code.text)
+            code_snippets.add(code.text.strip())
         
-        return code_snippets
+        return list(code_snippets)
 
     except TimeoutException:
         return [f"Timed out waiting for code snippets on {link}"]
@@ -50,7 +51,7 @@ def extract_code_from_link(link):
         return [f"Stale element reference on {link}: {e}"]
 
 # Define output file
-output_file = 'output.txt'
+output_file = 'output.csv'
 
 # Base URL
 base_url = 'https://bootstrapshuffle.com/classes'
@@ -64,7 +65,13 @@ wait = WebDriverWait(driver, 10)
 # Counter for tracking card index
 card_index_counter = 0
 
-with open(output_file, 'w') as file:
+# Open CSV file for writing
+with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
+    csv_writer = csv.writer(csvfile)
+    
+    # Write CSV headers
+    csv_writer.writerow(['Card Header', 'List Group Item', 'Link', 'Code Snippet'])
+
     while True:
         try:
             # Wait for card elements to be present
@@ -93,21 +100,19 @@ with open(output_file, 'w') as file:
                     else:
                         list_group_items = []
 
-                    file.write(f"Card Header: {card_header}\n")
-                    file.write("List Group Items:\n")
                     for item_text, item_link in list_group_items:
-                        file.write(f"- {item_text}\n")
+                        csv_writer.writerow([card_header, item_text, item_link, ""])  # Write row with empty code snippet
+
                         if item_link:
-                            file.write(f"  - Extracting code from: {item_link}\n")
                             code_snippets = extract_code_from_link(item_link)
                             for snippet in code_snippets:
-                                file.write(f"    Code snippet:\n{snippet}\n")
+                                csv_writer.writerow([card_header, item_text, item_link, snippet])
 
                     # Update the card index counter after successful processing
                     card_index_counter = card_index + 1
 
                 except (NoSuchElementException, ElementClickInterceptedException) as e:
-                    file.write(f"Error processing card at index {card_index}: {e}\n")
+                    csv_writer.writerow([f"Error processing card at index {card_index}"])
                     # Move to the next card after an error
                     card_index_counter = card_index + 1
                     break
@@ -121,7 +126,7 @@ with open(output_file, 'w') as file:
 
         except Exception as e:
             # Log exception and navigate back to the base URL
-            file.write(f"Exception occurred: {e}. Navigating back to base URL.\n")
+            csv_writer.writerow([f"Exception occurred: {e}. Navigating back to base URL."])
             driver.get(base_url)
             time.sleep(5)  # Wait a bit before retrying
 
